@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>EmilyOS</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+    * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* И явно пропишите отступы для flex-контейнеров */
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;  /* ← увеличил для наглядности */
+    padding: 12px;
+}
+
+.left {
+    display: flex;
+    align-items: center;
+    gap: 12px;  /* ← явно указать gap */
+}
+:root {
+    --bg:#020617;
+    --panel:rgba(15,23,42,0.7);
+    --border:rgba(255,255,255,0.06);
+    --text:#e2e8f0;
+    --muted:#94a3b8;
+    --accent:#6366f1;
+    --green:#22c55e;
+}
+
+*{box-sizing:border-box;}
+
+body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:radial-gradient(circle at top,#020617,#000);
+    color:var(--text);
+    display:flex;
+    height:100vh;
+}
+
+/* SVG base */
+svg{
+    width:18px;
+    height:18px;
+    stroke:currentColor;
+    fill:none;
+    stroke-width:1.5;
+}
+
+/* SIDEBAR */
+.sidebar{
+    width:260px;
+    padding:20px;
+    border-right:1px solid var(--border);
+}
+
+.logo{font-weight:600;margin-bottom:30px;}
+
+.nav{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.nav-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px;
+    border-radius:10px;
+    cursor:pointer;
+    color:var(--muted);
+    transition:.2s;
+}
+
+.nav-item:hover{
+    background:rgba(99,102,241,0.1);
+    color:white;
+}
+
+.nav-item.active{
+    background:rgba(99,102,241,0.2);
+    color:white;
+}
+
+/* MAIN */
+.main{flex:1;padding:24px 32px;}
+
+/* TOP */
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.mic{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--panel);
+    padding:8px 25px;
+    border-radius: 10px;
+    border:1px solid var(--border);
+}
+
+/* wave */
+.wave{display:flex;gap:3px;}
+.bar{
+    width:3px;height:10px;
+    background:var(--green);
+    animation:wave 1s infinite ease-in-out;
+}
+@keyframes wave{
+    0%,100%{height:6px;}
+    50%{height:18px;}
+}
+
+/* GRID */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:16px;
+    margin-top:20px;
+}
+
+.card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:18px;
+    backdrop-filter:blur(20px);
+}
+
+/* mic circle */
+.mic-circle{
+    width:64px;height:64px;
+    border-radius:50%;
+    margin:12px auto;
+    display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle,rgba(34,197,94,0.3),transparent);
+}
+
+/* MODULES */
+.section{margin-top:24px;}
+
+.module{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:rgba(30,41,59,0.5);
+    padding:14px;
+    border-radius:12px;
+    margin-bottom:10px;
+}
+
+.badge{
+    font-size:11px;
+    background:rgba(99,102,241,0.2);
+    padding:3px 8px;
+    border-radius:6px;
+    margin-left:6px;
+}
+
+/* toggle */
+.toggle{
+    width:40px;height:20px;
+    background:#334155;
+    border-radius:20px;
+    position:relative;
+    cursor:pointer;
+}
+
+.toggle::after{
+    content:"";
+    width:16px;height:16px;
+    background:white;
+    position:absolute;
+    top:2px;left:2px;
+    border-radius:50%;
+    transition:.2s;
+}
+
+.toggle.active{background:var(--accent);}
+.toggle.active::after{left:22px;}
+
+/* RIGHT */
+.right{
+    width:320px;
+    padding:24px;
+    border-left:1px solid var(--border);
+}
+
+.log{
+    display:flex;
+    gap:10px;
+    margin-bottom:14px;
+    font-size:14px;
+    color:var(--muted);
+}
+
+.status-card {
+    background: radial-gradient(circle at 50% 20%, #020617, #01030a 70%);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 20px;
+    width: 300px;
+    color: white;
+}
+
+/* текст */
+.status-title {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.status-active {
+    color: #22c55e;
+    margin-top: 6px;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+/* зона визуала */
+.voice-visual {
+    position: relative;
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ГЛАВНЫЙ круг */
+.mic-core {
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(34,197,94,0.25), rgba(34,197,94,0.05) 60%, transparent);
+    box-shadow:
+        0 0 40px rgba(34,197,94,0.25),
+        inset 0 0 20px rgba(34,197,94,0.2);
+}
+
+/* внешний glow */
+.mic-ring {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(34,197,94,0.15), transparent 70%);
+    animation: pulse 2.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.9); opacity: 0.6; }
+    70% { transform: scale(1.15); opacity: 0; }
+}
+
+/* микрофон */
+.mic-icon {
+    position: relative;
+    z-index: 2;
+}
+
+.mic-icon svg {
+    width: 26px;
+    stroke: #22c55e;
+    stroke-width: 1.6;
+}
+
+/* ВОЛНЫ */
+.wave {
+    position: absolute;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.wave.left { left: 0; }
+.wave.right { right: 0; }
+
+.wave div {
+    width: 3px;
+    height: 8px;
+    background: #22c55e;
+    border-radius: 2px;
+    opacity: 0.7;
+    animation: wave 1.2s infinite ease-in-out;
+}
+
+.wave div:nth-child(2){animation-delay:.1s;}
+.wave div:nth-child(3){animation-delay:.2s;}
+.wave div:nth-child(4){animation-delay:.3s;}
+.wave div:nth-child(5){animation-delay:.4s;}
+
+@keyframes wave {
+    0%,100% { height: 6px; opacity: 0.4; }
+    50% { height: 20px; opacity: 1; }
+}
+
+/* кнопка */
+.voice-btn {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(30,41,59,0.6);
+    text-align: center;
+    transition: 0.2s;
+}
+
+.voice-btn:hover {
+    background: rgba(51,65,85,0.9);
+}
+
+.status-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.status-sub {
+    font-size: 14px;
+    color: var(--text);
+}
+
+.status-wake {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 12px;
+}
+
+/* 🔊 Эквалайзер */
+.bars {
+    display: flex;
+    align-items: anchor-center;
+    gap: 7px;
+    height: 40px;
+    justify-content: center;
+    margin-top: 50px;
+}
+
+.bars span {
+    width: 8px;
+    height: 10px;
+    background: linear-gradient(180deg, #a78bfa, #6d28d9);
+    border-radius: 2px;
+    animation: sound 1s infinite ease-in-out;
+}
+
+/* разная задержка = "жизнь" */
+.bars span:nth-child(1) { animation-delay: 0s; }
+.bars span:nth-child(2) { animation-delay: 0.1s; }
+.bars span:nth-child(3) { animation-delay: 0.2s; }
+.bars span:nth-child(4) { animation-delay: 0.3s; }
+.bars span:nth-child(5) { animation-delay: 0.4s; }
+.bars span:nth-child(6) { animation-delay: 0.2s; }
+.bars span:nth-child(7) { animation-delay: 0.1s; }
+.bars span:nth-child(8) { animation-delay: 0.3s; }
+.bars span:nth-child(9) { animation-delay: 0.4s; }
+.bars span:nth-child(10){ animation-delay: 0.2s; }
+.bars span:nth-child(11){ animation-delay: 0.1s; }
+.bars span:nth-child(12) { animation-delay: 0s; }
+.bars span:nth-child(13) { animation-delay: 0.2s; }
+.bars span:nth-child(14) { animation-delay: 0.3s; }
+.bars span:nth-child(15) { animation-delay: 0.4s; }
+.bars span:nth-child(16) { animation-delay: 0.2s; }
+.bars span:nth-child(17) { animation-delay: 0.1s; }
+.bars span:nth-child(18) { animation-delay: 0.3s; }
+
+/* ключевая анимация */
+@keyframes sound {
+    0%, 100% {
+        height: 8px;
+        opacity: 0.4;
+    }
+    50% {
+        height: 32px;
+        opacity: 1;
+    }
+}
+
+.action-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 10px 12px;
+    margin-bottom: 8px;
+
+    border-radius: 10px;
+    border: 1px solid var(--border);
+
+    background: linear-gradient(180deg, #111827, #0f172a);
+    font-family: 'Inter',sans-serif;
+    color: var(--text);
+
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.stop-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 10px 12px;
+    margin-bottom: 8px;
+
+    border-radius: 10px;
+    border: 1px solid var(--border);
+
+    background: linear-gradient(180deg, #111827, #0f172a);
+    font-family: 'Inter',sans-serif;
+    color: var(--text);
+
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.stop-btn:hover {
+    border-color: #E7504F;
+    background: linear-gradient(180deg, #1a1f35, #111827);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 12px #E7504F;
+}
+
+/* hover */
+.action-btn:hover {
+    border-color: rgba(124, 58, 237, 0.5);
+    background: linear-gradient(180deg, #1a1f35, #111827);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.25);
+}
+
+/* active (нажатие) */
+.action-btn:active {
+    transform: scale(0.98);
+}
+
+/* последний без отступа */
+.action-btn:last-child {
+    margin-bottom: 0;
+}
+
+
+.modules-card {
+    width: 700px;
+    padding: 16px;
+    border-radius: 14px;
+    background: radial-gradient(circle at 50% 20%, #020617, #01030a 70%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    margin-top:20px;
+}
+
+/* header */
+.modules-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.modules-title {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.modules-sub {
+    font-size: 13px;
+    color: var(--muted);
+}
+
+/* кнопка */
+.add-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.add-btn:hover {
+    border-color: var(--accent);
+}
+
+/* элемент */
+.module-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+
+    margin-bottom: 8px;
+    transition: 0.2s;
+}
+
+.module-item:hover {
+    background: rgba(255,255,255,0.02);
+    border-color: rgba(124,58,237,0.3);
+}
+
+/* левая часть */
+.left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.drag {
+    color: var(--muted);
+    cursor: grab;
+}
+
+.icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(124,58,237,0.15);
+}
+
+/* текст */
+.name {
+    color: var(--text);
+    font-size: 14px;
+}
+
+.desc {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+/* бейдж */
+.badge {
+    font-size: 11px;
+    margin-left: 6px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: rgba(124,58,237,0.2);
+    color: #c4b5fd;
+}
+
+/* правая часть */
+.module-item-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    justify-content: flex-end;
+}
+
+.status {
+    font-size: 13px;
+    color: var(--green);
+}
+
+/* переключатель */
+.switch {
+    position: relative;
+    width: 34px;
+    height: 18px;
+}
+
+.switch input {
+    display: none;
+}
+
+.switch span {
+    position: absolute;
+    inset: 0;
+    background: #1f2937;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.switch span::before {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    left: 2px;
+    top: 2px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+
+.switch input:checked + span {
+    background: var(--accent);
+}
+
+.switch input:checked + span::before {
+    transform: translateX(16px);
+}
+
+/* меню */
+.menu {
+    color: var(--muted);
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+
+<div class="logo">Emily OS</div>
+
+<div class="nav">
+
+<div class="nav-item active">
+<svg viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+Главная
+</div>
+
+<div class="nav-item">
+<svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 1 3 3v6a3 3 0 1 1-6 0V6a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+Голос
+</div>
+
+<div class="nav-item">
+<img style="height: 15px;" src="commands.svg" alt="Description of SVG" />
+Команды
+</div>
+
+<div class="nav-item">
+<img style="height: 15px;" src="modules.svg" alt="Description of SVG" />
+Модули
+</div>
+
+<div class="nav-item">
+<img style="height: 15px;" src="logs.svg" alt="Description of SVG" />
+Журнал
+</div>
+
+<div class="nav-item">
+<img style="height: 15px;" src="settings.svg" alt="Description of SVG" />
+Настройки
+</div>
+
+</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<div class="topbar">
+<h2>Обзор</h2>
+
+<div class="mic stop-btn">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <rect x="10" y="10" width="80" height="80" rx="15" ry="15" fill="none" stroke="#E7504F" stroke-width="8" />
+</svg>
+Остановить ассистента
+</div>
+</div>
+
+<div class="grid">
+
+<div class="status-card">
+
+    <div class="status-title">Статус ассистента</div>
+    <div class="status-active">Активен</div>
+
+    <div class="voice-visual">
+
+        <div class="mic-ring"></div>
+        <div class="mic-core"></div>
+
+        <div class="mic-icon">
+            
+            <img style="height: 32px;" src="mic.svg" alt="Description of SVG" />
+        </div>
+
+    </div>
+
+</div>
+
+<div class="status-card">
+    <div class="status-title">Pipeline</div>
+    <div class="status-sub">Porcupine + Vosk + Regex</div>
+    <div class="status-wake">wake word: "Эмили"</div>
+
+    <div class="bars">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+</div>
+
+<div class="status-card">
+    <div class="status-title">Выполнено сегодня</div>
+    <h2>128 команд</h2>
+    <p style="color:var(--muted); font-size: small;">Успешно: 124 (97 %)</p>
+</div>
+
+<div class="status-card">
+    <div class="status-title">Быстрые действия</div>
+    <button class="action-btn" style="margin-top: 15px;">
+        <img style="height: 20px;" src="pen.svg" alt="Description of SVG" />
+        Создать скрипт
+    </button>
+
+    <button class="action-btn">
+        <img style="height: 20px;" src="cross.svg" alt="Description of SVG" />
+        Добавить модуль
+    </button>
+
+    <button class="action-btn">
+        <img style="height: 20px;" src="github.svg" alt="Description of SVG" />
+        Импорт из GitHub
+    </button>
+
+    <button class="action-btn">
+        <img style="height: 20px;" src="settings.svg" alt="Description of SVG" />
+        Открыть настройки
+    </button>
+</div>
+</div>
+
+<div class="modules-card">
+    <div class="modules-header">
+        <div>
+            <div class="modules-title">Активные модули</div>
+            <div class="modules-sub">Модули обрабатываются в порядке приоритета (сверху вниз)</div>
+        </div>
+
+        <button class="add-btn">+ Добавить модуль</button>
+    </div>
+
+    <div class="module-item">
+        <div class="left">
+            <div class="drag">⋮⋮</div>
+            <div class="icon"></div>
+
+            <div>
+                <div class="name">
+                    Porcupine <span class="badge">Hotword</span>
+                </div>
+                <div class="desc">Обнаружение голосового слова</div>
+            </div>
+        </div>
+
+        <div class="module-item-right">
+            <div class="status active">● Активен</div>
+            <label class="switch">
+                <input type="checkbox" checked>
+                <span></span>
+            </label>
+            <div class="menu">⋮</div>
+        </div>
+    </div>
+
+    <div class="module-item">
+        <div class="left">
+            <div class="drag">⋮⋮</div>
+            <div class="icon"></div>
+
+            <div>
+                <div class="name">
+                    Vosk STT <span class="badge">STT</span>
+                </div>
+                <div class="desc">Распознавание речи оффлайн</div>
+            </div>
+        </div>
+
+        <div class="module-item-right">
+            <div class="status active">● Активен</div>
+            <label class="switch">
+                <input type="checkbox" checked>
+                <span></span>
+            </label>
+            <div class="menu">⋮</div>
+        </div>
+    </div>
+
+    <div class="module-item">
+        <div class="left">
+            <div class="drag">⋮⋮</div>
+            <div class="icon"></div>
+
+            <div>
+                <div class="name">
+                    Regex Parser <span class="badge">NLP</span>
+                </div>
+                <div class="desc">Базовые регулярные выражения</div>
+            </div>
+        </div>
+
+        <div class="module-item-right">
+            <div class="status active">● Активен</div>
+            <label class="switch">
+                <input type="checkbox" checked>
+                <span></span>
+            </label>
+            <div class="menu">⋮</div>
+        </div>
+    </div>
+
+    <div class="module-item">
+        <div class="left">
+            <div class="drag">⋮⋮</div>
+            <div class="icon"></div>
+
+            <div>
+                <div class="name">
+                    Google Text-To-Speech <span class="badge">TTS</span>
+                </div>
+                <div class="desc">Генерация голосовых ответов</div>
+            </div>
+        </div>
+
+        <div class="module-item-right">
+            <div class="status active">● Активен</div>
+            <label class="switch">
+                <input type="checkbox" checked>
+                <span></span>
+            </label>
+            <div class="menu">⋮</div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- RIGHT 
+<div class="right">
+
+<h3>Журнал</h3>
+
+<div class="log">
+<svg viewBox="0 0 24 24" width="14"><circle cx="12" cy="12" r="10"/></svg>
+Голос активирован
+</div>
+
+<div class="log">
+<svg viewBox="0 0 24 24" width="14"><circle cx="12" cy="12" r="10"/></svg>
+Команда распознана
+</div>
+
+<div class="log">
+<svg viewBox="0 0 24 24" width="14"><circle cx="12" cy="12" r="10"/></svg>
+Выполнено
+</div>
+
+</div> -->
+<script src="script.js"></script>
+</body>
+</html>

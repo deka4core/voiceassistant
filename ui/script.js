@@ -107,3 +107,123 @@ window.assistantUI = {
     setState: setAssistantState,
     getState: () => isAssistantActive
 };
+
+const navItems = document.querySelectorAll(".nav-item");
+const tabs = document.querySelectorAll(".tab");
+
+navItems.forEach(item => {
+
+    item.addEventListener("click", () => {
+
+        navItems.forEach(nav =>
+            nav.classList.remove("active")
+        );
+
+        tabs.forEach(tab =>
+            tab.classList.remove("active")
+        );
+
+        item.classList.add("active");
+
+        const tabId = item.dataset.tab;
+
+        document
+            .getElementById(tabId)
+            .classList.add("active");
+
+    });
+
+});
+
+
+const runButtons = document.querySelectorAll('.cmd-btn.run');
+const consoleOutput = document.getElementById('consoleOutput');
+
+runButtons.forEach(btn => {
+
+    btn.addEventListener('click', () => {
+
+        const card = btn.closest('.command-card');
+        const name = card.querySelector('.command-name').innerText;
+
+        const line = document.createElement('div');
+
+        line.className = 'console-line success';
+
+        const now = new Date().toLocaleTimeString();
+
+        line.innerText = `[${now}] Executed command: ${name}`;
+
+        consoleOutput.prepend(line);
+
+    });
+
+});
+
+
+const modules = document.querySelectorAll(".module-card");
+const slots = document.querySelectorAll(".pipeline-slot");
+
+let draggedModule = null;
+
+modules.forEach(module => {
+
+    module.addEventListener("dragstart", () => {
+
+        draggedModule = module;
+
+        module.classList.add("dragging");
+
+    });
+
+    module.addEventListener("dragend", () => {
+
+        module.classList.remove("dragging");
+
+    });
+
+});
+
+slots.forEach(slot => {
+
+    slot.addEventListener("dragover", e => {
+
+        e.preventDefault();
+
+        slot.classList.add("dragover");
+
+    });
+
+    slot.addEventListener("dragleave", () => {
+
+        slot.classList.remove("dragover");
+
+    });
+
+    slot.addEventListener("drop", () => {
+
+        slot.classList.remove("dragover");
+
+        const acceptType = slot.dataset.accept;
+        const moduleType = draggedModule.dataset.type;
+
+        // проверка типа
+        if (acceptType !== moduleType) {
+
+            alert("Неверный тип модуля");
+
+            return;
+        }
+
+        // только один модуль
+        const content = slot.querySelector(".slot-content");
+
+        content.innerHTML = "";
+
+        content.appendChild(
+            draggedModule.cloneNode(true)
+        );
+
+    });
+
+});

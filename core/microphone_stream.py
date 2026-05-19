@@ -1,3 +1,4 @@
+# core/microphone_stream.py - исправленный
 import sounddevice as sd
 import numpy as np
 import time
@@ -11,37 +12,56 @@ class MicrophoneStream:
         self.silence_duration = silence_duration
         self.audio_queue = []
         self.is_running = False
+        self.stream = None
 
-    def callback(self, indata, frames, time, status):
+    def callback(self, indata, frames, time_info, status):
         if status:
-            print(f"Статус аудио: {status}")
+            # Не выводим каждую ошибку, только важные
+            if "input overflow" not in str(status):
+                print(f"Статус аудио: {status}")
         self.audio_queue.append(indata.copy())
 
     def start(self):
         self.is_running = True
 
-        with sd.InputStream(callback=self.callback,
-                            channels=1,
-                            samplerate=self.detector.get_sample_rate(),
-                            blocksize=self.detector.get_frame_size()):
+        self.stream = sd.InputStream(
+            callback=self.callback,
+            channels=1,
+            samplerate=self.detector.get_sample_rate(),
+            blocksize=self.detector.get_frame_size()
+        )
+        self.stream.start()
 
+        try:
             while self.is_running:
                 if self.audio_queue:
                     chunk = self.audio_queue.pop(0)
-                    if self.detector.detect(chunk):
-                        yield chunk
-                time.sleep(0.01)
+                    try:
+                        if self.detector.detect(chunk):
+                            yield chunk
+                    except Exception as e:
+                        print(f"Ошибка детекции: {e}")
+                else:
+                    time.sleep(0.05)  # Уменьшаем нагрузку на CPU
+        except GeneratorExit:
+            pass
+        finally:
+            self.stop()
 
-    def record_until_silence(self):
+    def record_until_silence(self, max_duration=10.0):
         recorded = []
         silence_start = None
         start_time = time.time()
 
-        while True:
+        # Сбрасываем очередь перед записью команды
+        time.sleep(0.1)
+
+        while time.time() - start_time < max_duration:
             if self.audio_queue:
                 chunk = self.audio_queue.pop(0)
                 recorded.append(chunk)
 
+                # Вычисляем громкость
                 volume = np.sqrt(np.mean(chunk ** 2))
 
                 if volume < self.silence_threshold:
@@ -51,13 +71,17 @@ class MicrophoneStream:
                         break
                 else:
                     silence_start = None
+            else:
+                time.sleep(0.02)
 
-                if time.time() - start_time > 10:
-                    break
+        if not recorded:
+            return np.array([])
 
-            time.sleep(0.01)
-
-        return np.concatenate(recorded) if recorded else np.array([])
+        return np.concatenate(recorded)
 
     def stop(self):
         self.is_running = False
+        if self.stream:
+            self.stream.stop()
+            self.stream.close()
+            self.stream = None
